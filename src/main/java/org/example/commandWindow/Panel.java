@@ -4,13 +4,19 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.util.ArrayList;
 
 public class Panel extends JPanel implements KeyListener {
 
-    JLabel testLabel;
+    private final int panelHeight = 700; // Panel height
+    private final int panelWidth = 1000; // Panel width
+
+    private ArrayList<JLabel> IO_array; // Declaring the JLabel array for input and output of the terminal
+    private final int fontHeight = this.getFontMetrics(getFont()).getHeight(); // Calculating height of letters
 
     public Panel(){
-        this.setPreferredSize(new Dimension(1000, 700));
+        /* Panel setup */
+        this.setPreferredSize(new Dimension(panelWidth, panelHeight));
         this.setBackground(Color.BLACK);
         this.setLayout(null);
         this.addKeyListener(this);
@@ -18,16 +24,47 @@ public class Panel extends JPanel implements KeyListener {
         this.setFocusable(true);
         this.requestFocusInWindow();
 
-        testLabel = new JLabel("");
-        testLabel.setBounds(0, -40, 1000, 100);
-        testLabel.setForeground(Color.white);
-        this.add(testLabel);
+        setup_IO_array();
+    }
+
+    /**
+     * Sets up the input and output text interface for the terminal
+     */
+    private void setup_IO_array(){
+        /* IO_array initialization and helper variable 'y' creation */
+        IO_array = new ArrayList<>();
+        int y = 0;
+
+        /*
+           I want to fill the whole height of the panel with labels.
+           So here I am checking, if the next label is or isn't out
+           of the boundaries of the screen. If so, I add no more.
+        */
+        while((y + fontHeight) < panelHeight){
+            IO_label_init(0, y, "SAMPLE TEXT");
+            y += fontHeight;
+        }
+    }
+
+    /**
+     * Initializes each label of the text interface of the terminal
+     * @param x Position on the X axis
+     * @param y Position on the Y axis
+     * @param text Initial text of the label
+     */
+    private void IO_label_init(int x, int y, String text){
+        /* Label setup */
+        JLabel label = new JLabel(text);
+        label.setBounds(x, y, panelWidth, fontHeight);
+        label.setForeground(Color.WHITE);
+
+        /* Adding label to the panel and IO_array */
+        this.add(label);
+        IO_array.add(label);
     }
 
     @Override
     public void keyTyped(KeyEvent keyEvent) {
-        testLabel.setText(testLabel.getText() + keyEvent.getKeyChar());
-
     }
 
     @Override

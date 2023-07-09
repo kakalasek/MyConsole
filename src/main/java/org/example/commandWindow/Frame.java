@@ -6,6 +6,7 @@ import java.awt.*;
 public class Frame extends JFrame {
 
     public Frame(){
+        /* Frame setup */
         this.setDefaultCloseOperation(EXIT_ON_CLOSE);
         this.setResizable(false);
 
