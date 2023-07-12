@@ -1,5 +1,7 @@
 package org.example.commandWindow;
 
+import org.example.Utils.StringHandler;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
@@ -8,11 +10,15 @@ import java.util.ArrayList;
 
 public class Panel extends JPanel implements KeyListener {
 
+    private StringHandler strHandler = new StringHandler(this.getFontMetrics(this.getFont())); // Class for easier manipulation with strings inside the labels
+
     private final int panelHeight = 700; // Panel height
     private final int panelWidth = 1000; // Panel width
 
-    private ArrayList<JLabel> IO_array; // Declaring the JLabel array for input and output of the terminal
-    private final int fontHeight = this.getFontMetrics(getFont()).getHeight(); // Calculating height of letters
+    private ArrayList<JLabel> IO_array; // Declaring the JLabel array for input and output of the terminal. Its size also represents the number of lines on the screen (INCLUDING LINE 0!)
+    private final int fontHeight = strHandler.calculateFontHeight(); // Calculating height of letters
+
+    private static int currentLine = 0;
 
     public Panel(){
         /* Panel setup */
@@ -41,9 +47,12 @@ public class Panel extends JPanel implements KeyListener {
            of the boundaries of the screen. If so, I add no more.
         */
         while((y + fontHeight) < panelHeight){
-            IO_label_init(0, y, "SAMPLE TEXT");
+            IO_label_init(0, y, "");
             y += fontHeight;
         }
+
+        /* Initial prompt */
+        prompt("User@This_Computer~: \0");
     }
 
     /**
@@ -63,13 +72,59 @@ public class Panel extends JPanel implements KeyListener {
         IO_array.add(label);
     }
 
+    private JLabel getCurrentLine(){
+        return IO_array.get(currentLine);
+    }
+
+    /**
+     * Checks if the user hasn't used up the full space of the console IO. If so, invokes scroll
+     */
+    private void checkForOverflow(){
+        if(currentLine >= IO_array.size()){
+            currentLine = IO_array.size()-1; // Setting current line to the last line of the screen
+            scroll();
+        }
+    }
+
+    /**
+     * Scrolls down by a line
+     */
+    private void scroll(){
+        for(int i = 0; i < IO_array.size(); i++){
+            /* Clears the last line and breaks from for loop */
+            if(i == (IO_array.size()-1)){ IO_array.get(i).setText(""); break;}
+
+            IO_array.get(i).setText(IO_array.get(i+1).getText());
+        }
+    }
+
+    private void prompt(String prompt){
+        getCurrentLine().setText(prompt);
+    }
+
     @Override
-    public void keyTyped(KeyEvent keyEvent) {
+    public void keyTyped(KeyEvent keyEvent){
+        /* Checking if end of the line wasn't reached. If so, incrementing currentLine */
+        if(strHandler.calculateTextWidth(getCurrentLine().getText()) > (getCurrentLine().getWidth() - 150)){
+            currentLine++;
+            checkForOverflow(); // Checking for overflow
+        }
+
+        /* Deciding what to type based on keyboard input */
+        switch (keyEvent.getKeyChar()){
+            case 10: currentLine++;
+                     checkForOverflow(); // Checking for overflow
+                     prompt("User@This_Computer~: \0");
+                break;
+            case 8: if(getCurrentLine().getText() == "") currentLine--;
+                    getCurrentLine().setText(strHandler.removeLastChar(getCurrentLine().getText()));
+                break;
+            default: getCurrentLine().setText(getCurrentLine().getText() + keyEvent.getKeyChar());
+        }
     }
 
     @Override
     public void keyPressed(KeyEvent keyEvent) {
-
     }
 
     @Override

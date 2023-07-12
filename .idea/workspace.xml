@@ -4,7 +4,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a40efdf6-2b4c-4ffb-ace3-cd0a16d9036f" name="Changes" comment="A little improvement">
+    <list default="true" id="a40efdf6-2b4c-4ffb-ace3-cd0a16d9036f" name="Changes" comment="IO_array basic setup">
+      <change afterPath="$PROJECT_DIR$/src/main/java/org/example/Utils/StringHandler.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/org/example/commandWindow/Frame.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/commandWindow/Frame.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/org/example/commandWindow/Panel.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/commandWindow/Panel.java" afterDir="false" />
@@ -23,6 +24,19 @@
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="GitHubPullRequestSearchHistory"><![CDATA[{
+  "lastFilter": {
+    "state": "OPEN"
+  }
+}]]></component>
+  <component name="GithubPullRequestsUISettings">
+    <option name="selectedUrlAndAccountId">
+      <UrlAndAccount>
+        <option name="accountId" value="0b8fc052-882c-44e9-a4c5-97524c7634f8" />
+        <option name="url" value="https://github.com/kakalasek/MyConsole.git" />
+      </UrlAndAccount>
+    </option>
   </component>
   <component name="MarkdownSettingsMigration">
     <option name="stateVersion" value="1" />
@@ -65,7 +79,8 @@
       <workItem from="1688408451341" duration="814000" />
       <workItem from="1688502933286" duration="51000" />
       <workItem from="1688672455480" duration="2400000" />
-      <workItem from="1688934858792" duration="2133000" />
+      <workItem from="1688934858792" duration="2193000" />
+      <workItem from="1689157296302" duration="7423000" />
     </task>
     <task id="LOCAL-00001" summary="Initial commit">
       <created>1680078485795</created>
@@ -82,7 +97,15 @@
       <option name="project" value="LOCAL" />
       <updated>1688674849457</updated>
     </task>
-    <option name="localTasksCounter" value="3" />
+    <task id="LOCAL-00003" summary="IO_array basic setup">
+      <option name="closed" value="true" />
+      <created>1688937045794</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1688937045794</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -91,6 +114,7 @@
   <component name="VcsManagerConfiguration">
     <MESSAGE value="Initial commit" />
     <MESSAGE value="A little improvement" />
-    <option name="LAST_COMMIT_MESSAGE" value="A little improvement" />
+    <MESSAGE value="IO_array basic setup" />
+    <option name="LAST_COMMIT_MESSAGE" value="IO_array basic setup" />
   </component>
 </project>

@@ -1,0 +1,261 @@
+Index: src/main/java/org/example/commandWindow/Frame.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package org.example.commandWindow;\n\nimport javax.swing.*;\nimport java.awt.*;\n\npublic class Frame extends JFrame {\n\n    public Frame(){\n        /* Frame setup */\n        this.setDefaultCloseOperation(EXIT_ON_CLOSE);\n        this.setResizable(false);\n\n        this.getContentPane().add(new Panel());\n        this.pack();\n\n        this.setLocationRelativeTo(null);\n        this.setVisible(true);\n    }\n}\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/org/example/commandWindow/Frame.java b/src/main/java/org/example/commandWindow/Frame.java
+--- a/src/main/java/org/example/commandWindow/Frame.java	(revision c0908218837983d91ac4c461becaa3e5d74015b4)
++++ b/src/main/java/org/example/commandWindow/Frame.java	(date 1689157861370)
+@@ -1,7 +1,6 @@
+ package org.example.commandWindow;
+ 
+ import javax.swing.*;
+-import java.awt.*;
+ 
+ public class Frame extends JFrame {
+ 
+Index: src/main/java/org/example/commandWindow/Panel.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package org.example.commandWindow;\n\nimport javax.swing.*;\nimport java.awt.*;\nimport java.awt.event.KeyEvent;\nimport java.awt.event.KeyListener;\nimport java.util.ArrayList;\n\npublic class Panel extends JPanel implements KeyListener {\n\n    private final int panelHeight = 700; // Panel height\n    private final int panelWidth = 1000; // Panel width\n\n    private ArrayList<JLabel> IO_array; // Declaring the JLabel array for input and output of the terminal\n    private final int fontHeight = this.getFontMetrics(getFont()).getHeight(); // Calculating height of letters\n\n    public Panel(){\n        /* Panel setup */\n        this.setPreferredSize(new Dimension(panelWidth, panelHeight));\n        this.setBackground(Color.BLACK);\n        this.setLayout(null);\n        this.addKeyListener(this);\n\n        this.setFocusable(true);\n        this.requestFocusInWindow();\n\n        setup_IO_array();\n    }\n\n    /**\n     * Sets up the input and output text interface for the terminal\n     */\n    private void setup_IO_array(){\n        /* IO_array initialization and helper variable 'y' creation */\n        IO_array = new ArrayList<>();\n        int y = 0;\n\n        /*\n           I want to fill the whole height of the panel with labels.\n           So here I am checking, if the next label is or isn't out\n           of the boundaries of the screen. If so, I add no more.\n        */\n        while((y + fontHeight) < panelHeight){\n            IO_label_init(0, y, \"SAMPLE TEXT\");\n            y += fontHeight;\n        }\n    }\n\n    /**\n     * Initializes each label of the text interface of the terminal\n     * @param x Position on the X axis\n     * @param y Position on the Y axis\n     * @param text Initial text of the label\n     */\n    private void IO_label_init(int x, int y, String text){\n        /* Label setup */\n        JLabel label = new JLabel(text);\n        label.setBounds(x, y, panelWidth, fontHeight);\n        label.setForeground(Color.WHITE);\n\n        /* Adding label to the panel and IO_array */\n        this.add(label);\n        IO_array.add(label);\n    }\n\n    @Override\n    public void keyTyped(KeyEvent keyEvent) {\n    }\n\n    @Override\n    public void keyPressed(KeyEvent keyEvent) {\n\n    }\n\n    @Override\n    public void keyReleased(KeyEvent keyEvent) {\n\n    }\n}\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/org/example/commandWindow/Panel.java b/src/main/java/org/example/commandWindow/Panel.java
+--- a/src/main/java/org/example/commandWindow/Panel.java	(revision c0908218837983d91ac4c461becaa3e5d74015b4)
++++ b/src/main/java/org/example/commandWindow/Panel.java	(date 1689164740053)
+@@ -1,5 +1,7 @@
+ package org.example.commandWindow;
+ 
++import org.example.Utils.StringHandler;
++
+ import javax.swing.*;
+ import java.awt.*;
+ import java.awt.event.KeyEvent;
+@@ -8,11 +10,15 @@
+ 
+ public class Panel extends JPanel implements KeyListener {
+ 
++    private StringHandler strHandler = new StringHandler(this.getFontMetrics(this.getFont())); // Class for easier manipulation with strings inside the labels
++
+     private final int panelHeight = 700; // Panel height
+     private final int panelWidth = 1000; // Panel width
+ 
+-    private ArrayList<JLabel> IO_array; // Declaring the JLabel array for input and output of the terminal
+-    private final int fontHeight = this.getFontMetrics(getFont()).getHeight(); // Calculating height of letters
++    private ArrayList<JLabel> IO_array; // Declaring the JLabel array for input and output of the terminal. Its size also represents the number of lines on the screen (INCLUDING LINE 0!)
++    private final int fontHeight = strHandler.calculateFontHeight(); // Calculating height of letters
++
++    private static int currentLine = 0;
+ 
+     public Panel(){
+         /* Panel setup */
+@@ -41,9 +47,12 @@
+            of the boundaries of the screen. If so, I add no more.
+         */
+         while((y + fontHeight) < panelHeight){
+-            IO_label_init(0, y, "SAMPLE TEXT");
++            IO_label_init(0, y, "");
+             y += fontHeight;
+         }
++
++        /* Initial prompt */
++        prompt("User@This_Computer~: \0");
+     }
+ 
+     /**
+@@ -63,13 +72,59 @@
+         IO_array.add(label);
+     }
+ 
++    private JLabel getCurrentLine(){
++        return IO_array.get(currentLine);
++    }
++
++    /**
++     * Checks if the user hasn't used up the full space of the console IO. If so, invokes scroll
++     */
++    private void checkForOverflow(){
++        if(currentLine >= IO_array.size()){
++            currentLine = IO_array.size()-1; // Setting current line to the last line of the screen
++            scroll();
++        }
++    }
++
++    /**
++     * Scrolls down by a line
++     */
++    private void scroll(){
++        for(int i = 0; i < IO_array.size(); i++){
++            /* Clears the last line and breaks from for loop */
++            if(i == (IO_array.size()-1)){ IO_array.get(i).setText(""); break;}
++
++            IO_array.get(i).setText(IO_array.get(i+1).getText());
++        }
++    }
++
++    private void prompt(String prompt){
++        getCurrentLine().setText(prompt);
++    }
++
+     @Override
+-    public void keyTyped(KeyEvent keyEvent) {
++    public void keyTyped(KeyEvent keyEvent){
++        /* Checking if end of the line wasn't reached. If so, incrementing currentLine */
++        if(strHandler.calculateTextWidth(getCurrentLine().getText()) > (getCurrentLine().getWidth() - 150)){
++            currentLine++;
++            checkForOverflow(); // Checking for overflow
++        }
++
++        /* Deciding what to type based on keyboard input */
++        switch (keyEvent.getKeyChar()){
++            case 10: currentLine++;
++                     checkForOverflow(); // Checking for overflow
++                     prompt("User@This_Computer~: \0");
++                break;
++            case 8: if(getCurrentLine().getText() == "") currentLine--;
++                    getCurrentLine().setText(strHandler.removeLastChar(getCurrentLine().getText()));
++                break;
++            default: getCurrentLine().setText(getCurrentLine().getText() + keyEvent.getKeyChar());
++        }
+     }
+ 
+     @Override
+     public void keyPressed(KeyEvent keyEvent) {
+-
+     }
+ 
+     @Override
+Index: src/main/java/org/example/Utils/StringHandler.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/org/example/Utils/StringHandler.java b/src/main/java/org/example/Utils/StringHandler.java
+new file mode 100644
+--- /dev/null	(date 1689164515788)
++++ b/src/main/java/org/example/Utils/StringHandler.java	(date 1689164515788)
+@@ -0,0 +1,44 @@
++package org.example.Utils;
++
++import java.awt.*;
++
++/**
++ * Provides some useful methods for manipulating with string and fonts
++ */
++public class StringHandler {
++
++    private FontMetrics fontMetrics;
++
++    public StringHandler(FontMetrics fontMetrics){
++        this.fontMetrics = fontMetrics;
++    }
++
++    /**
++     * Calculates the height of font passed in the constructor
++     * @return The height of the font
++     */
++    public int calculateFontHeight(){
++        return fontMetrics.getHeight();
++    }
++
++    /**
++     * Calculstes the width of a text according to the font passed in the constructor
++     * @param text Text of which you want to know the width of
++     * @return The width of the text passed
++     */
++    public int calculateTextWidth(String text){
++        return fontMetrics.stringWidth(text);
++    }
++
++    /**
++     * Removes last character of the passed string. If it sees an End of Medium at the end of the string, it will leave it intact!
++     */
++    public String removeLastChar(String str){
++        String out = "";
++        for(int i = 0; i < str.length(); i++){
++            if(i == (str.length()-1) && str.charAt(i) != '\0') break;
++            out = out.concat(String.valueOf(str.charAt(i)));
++        }
++        return out;
++    }
++}
+Index: .idea/workspace.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<project version=\"4\">\n  <component name=\"AutoImportSettings\">\n    <option name=\"autoReloadType\" value=\"SELECTIVE\" />\n  </component>\n  <component name=\"ChangeListManager\">\n    <list default=\"true\" id=\"a40efdf6-2b4c-4ffb-ace3-cd0a16d9036f\" name=\"Changes\" comment=\"A little improvement\">\n      <change beforePath=\"$PROJECT_DIR$/.idea/workspace.xml\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/.idea/workspace.xml\" afterDir=\"false\" />\n      <change beforePath=\"$PROJECT_DIR$/src/main/java/org/example/commandWindow/Frame.java\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/src/main/java/org/example/commandWindow/Frame.java\" afterDir=\"false\" />\n      <change beforePath=\"$PROJECT_DIR$/src/main/java/org/example/commandWindow/Panel.java\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/src/main/java/org/example/commandWindow/Panel.java\" afterDir=\"false\" />\n    </list>\n    <option name=\"SHOW_DIALOG\" value=\"false\" />\n    <option name=\"HIGHLIGHT_CONFLICTS\" value=\"true\" />\n    <option name=\"HIGHLIGHT_NON_ACTIVE_CHANGELIST\" value=\"false\" />\n    <option name=\"LAST_RESOLUTION\" value=\"IGNORE\" />\n  </component>\n  <component name=\"FileTemplateManagerImpl\">\n    <option name=\"RECENT_TEMPLATES\">\n      <list>\n        <option value=\"Class\" />\n      </list>\n    </option>\n  </component>\n  <component name=\"Git.Settings\">\n    <option name=\"RECENT_GIT_ROOT_PATH\" value=\"$PROJECT_DIR$\" />\n  </component>\n  <component name=\"MarkdownSettingsMigration\">\n    <option name=\"stateVersion\" value=\"1\" />\n  </component>\n  <component name=\"ProjectId\" id=\"2NgGjaX4QIlR1FHVdXup1nWXS2Q\" />\n  <component name=\"ProjectLevelVcsManager\" settingsEditedManually=\"true\">\n    <ConfirmationsSetting value=\"2\" id=\"Add\" />\n  </component>\n  <component name=\"ProjectViewState\">\n    <option name=\"hideEmptyMiddlePackages\" value=\"true\" />\n    <option name=\"showLibraryContents\" value=\"true\" />\n  </component>\n  <component name=\"PropertiesComponent\">{\n  &quot;keyToString&quot;: {\n    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,\n    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,\n    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,\n    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,\n    &quot;last_opened_file_path&quot;: &quot;/home/pipa/Projects/MyConsole&quot;,\n    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,\n    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,\n    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,\n    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,\n    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;\n  }\n}</component>\n  <component name=\"RebelAgentSelection\">\n    <selection>jr</selection>\n  </component>\n  <component name=\"SpellCheckerSettings\" RuntimeDictionaries=\"0\" Folders=\"0\" CustomDictionaries=\"0\" DefaultDictionary=\"application-level\" UseSingleDictionary=\"true\" transferred=\"true\" />\n  <component name=\"TaskManager\">\n    <task active=\"true\" id=\"Default\" summary=\"Default task\">\n      <changelist id=\"a40efdf6-2b4c-4ffb-ace3-cd0a16d9036f\" name=\"Changes\" comment=\"\" />\n      <created>1680078450174</created>\n      <option name=\"number\" value=\"Default\" />\n      <option name=\"presentableId\" value=\"Default\" />\n      <updated>1680078450174</updated>\n      <workItem from=\"1680078451753\" duration=\"127000\" />\n      <workItem from=\"1683007051702\" duration=\"24000\" />\n      <workItem from=\"1688408451341\" duration=\"814000\" />\n      <workItem from=\"1688502933286\" duration=\"51000\" />\n      <workItem from=\"1688672455480\" duration=\"2400000\" />\n      <workItem from=\"1688934858792\" duration=\"2133000\" />\n    </task>\n    <task id=\"LOCAL-00001\" summary=\"Initial commit\">\n      <created>1680078485795</created>\n      <option name=\"number\" value=\"00001\" />\n      <option name=\"presentableId\" value=\"LOCAL-00001\" />\n      <option name=\"project\" value=\"LOCAL\" />\n      <updated>1680078485795</updated>\n    </task>\n    <task id=\"LOCAL-00002\" summary=\"A little improvement\">\n      <option name=\"closed\" value=\"true\" />\n      <created>1688674849457</created>\n      <option name=\"number\" value=\"00002\" />\n      <option name=\"presentableId\" value=\"LOCAL-00002\" />\n      <option name=\"project\" value=\"LOCAL\" />\n      <updated>1688674849457</updated>\n    </task>\n    <option name=\"localTasksCounter\" value=\"3\" />\n    <servers />\n  </component>\n  <component name=\"TypeScriptGeneratedFilesManager\">\n    <option name=\"version\" value=\"3\" />\n  </component>\n  <component name=\"VcsManagerConfiguration\">\n    <MESSAGE value=\"Initial commit\" />\n    <MESSAGE value=\"A little improvement\" />\n    <option name=\"LAST_COMMIT_MESSAGE\" value=\"A little improvement\" />\n  </component>\n</project>
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.idea/workspace.xml b/.idea/workspace.xml
+--- a/.idea/workspace.xml	(revision c0908218837983d91ac4c461becaa3e5d74015b4)
++++ b/.idea/workspace.xml	(date 1689164740185)
+@@ -4,7 +4,8 @@
+     <option name="autoReloadType" value="SELECTIVE" />
+   </component>
+   <component name="ChangeListManager">
+-    <list default="true" id="a40efdf6-2b4c-4ffb-ace3-cd0a16d9036f" name="Changes" comment="A little improvement">
++    <list default="true" id="a40efdf6-2b4c-4ffb-ace3-cd0a16d9036f" name="Changes" comment="IO_array basic setup">
++      <change afterPath="$PROJECT_DIR$/src/main/java/org/example/Utils/StringHandler.java" afterDir="false" />
+       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+       <change beforePath="$PROJECT_DIR$/src/main/java/org/example/commandWindow/Frame.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/commandWindow/Frame.java" afterDir="false" />
+       <change beforePath="$PROJECT_DIR$/src/main/java/org/example/commandWindow/Panel.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/commandWindow/Panel.java" afterDir="false" />
+@@ -23,6 +24,19 @@
+   </component>
+   <component name="Git.Settings">
+     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
++  </component>
++  <component name="GitHubPullRequestSearchHistory"><![CDATA[{
++  "lastFilter": {
++    "state": "OPEN"
++  }
++}]]></component>
++  <component name="GithubPullRequestsUISettings">
++    <option name="selectedUrlAndAccountId">
++      <UrlAndAccount>
++        <option name="accountId" value="0b8fc052-882c-44e9-a4c5-97524c7634f8" />
++        <option name="url" value="https://github.com/kakalasek/MyConsole.git" />
++      </UrlAndAccount>
++    </option>
+   </component>
+   <component name="MarkdownSettingsMigration">
+     <option name="stateVersion" value="1" />
+@@ -65,7 +79,8 @@
+       <workItem from="1688408451341" duration="814000" />
+       <workItem from="1688502933286" duration="51000" />
+       <workItem from="1688672455480" duration="2400000" />
+-      <workItem from="1688934858792" duration="2133000" />
++      <workItem from="1688934858792" duration="2193000" />
++      <workItem from="1689157296302" duration="7423000" />
+     </task>
+     <task id="LOCAL-00001" summary="Initial commit">
+       <created>1680078485795</created>
+@@ -82,7 +97,15 @@
+       <option name="project" value="LOCAL" />
+       <updated>1688674849457</updated>
+     </task>
+-    <option name="localTasksCounter" value="3" />
++    <task id="LOCAL-00003" summary="IO_array basic setup">
++      <option name="closed" value="true" />
++      <created>1688937045794</created>
++      <option name="number" value="00003" />
++      <option name="presentableId" value="LOCAL-00003" />
++      <option name="project" value="LOCAL" />
++      <updated>1688937045794</updated>
++    </task>
++    <option name="localTasksCounter" value="4" />
+     <servers />
+   </component>
+   <component name="TypeScriptGeneratedFilesManager">
+@@ -91,6 +114,7 @@
+   <component name="VcsManagerConfiguration">
+     <MESSAGE value="Initial commit" />
+     <MESSAGE value="A little improvement" />
+-    <option name="LAST_COMMIT_MESSAGE" value="A little improvement" />
++    <MESSAGE value="IO_array basic setup" />
++    <option name="LAST_COMMIT_MESSAGE" value="IO_array basic setup" />
+   </component>
+ </project>
+\ No newline at end of file
