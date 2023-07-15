@@ -31,7 +31,7 @@ public class StringHandler {
     }
 
     /**
-     * Removes last character of the passed string. If it sees an End of Medium at the end of the string, it will leave it intact!
+     * Removes last character of the passed string. If it sees a NULL character at the end of the string, it will leave it intact!
      */
     public String removeLastChar(String str){
         String out = "";

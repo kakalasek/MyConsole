@@ -1,6 +1,9 @@
 package org.example.commandWindow;
 
+import org.example.Utils.CommandMapper;
 import org.example.Utils.StringHandler;
+import org.example.commands.Command;
+import org.example.commands.lct.Lct;
 
 import javax.swing.*;
 import java.awt.*;
@@ -15,10 +18,18 @@ public class Panel extends JPanel implements KeyListener {
     private final int panelHeight = 700; // Panel height
     private final int panelWidth = 1000; // Panel width
 
+    private final String defaultPrompt = "User@This_Computer~: \0"; //Using NULL character, so the prompt cannot be deleted by the user
+
     private ArrayList<JLabel> IO_array; // Declaring the JLabel array for input and output of the terminal. Its size also represents the number of lines on the screen (INCLUDING LINE 0!)
     private final int fontHeight = strHandler.calculateFontHeight(); // Calculating height of letters
 
-    private static int currentLine = 0;
+    private static int currentLine = 0; // For tracking of which line I am currently on
+
+    private String[] std_in; // Array for standard input
+
+    private String std_out; // Array for standard output
+
+    CommandMapper commandMapper = new CommandMapper(); // For mapping commands
 
     public Panel(){
         /* Panel setup */
@@ -52,7 +63,7 @@ public class Panel extends JPanel implements KeyListener {
         }
 
         /* Initial prompt */
-        prompt("User@This_Computer~: \0");
+        prompt(defaultPrompt);
     }
 
     /**
@@ -77,7 +88,7 @@ public class Panel extends JPanel implements KeyListener {
     }
 
     /**
-     * Checks if the user hasn't used up the full space of the console IO. If so, invokes scroll
+     * Checks if the user hasn't used up the full space of the console IO space. If so, invokes scroll
      */
     private void checkForOverflow(){
         if(currentLine >= IO_array.size()){
@@ -98,25 +109,61 @@ public class Panel extends JPanel implements KeyListener {
         }
     }
 
+    /**
+     * Simply prints a text on to the console. Doesn't deal with overflow or exceeding a line
+     * @param prompt Text to be printed onto the console
+     */
     private void prompt(String prompt){
         getCurrentLine().setText(prompt);
+    }
+
+    /**
+     * Checks if current label text doesn't exceed the line width
+     * @return True if the text does exceed the line limit, False if it does not
+     */
+    private boolean exceeds_line(){
+        return strHandler.calculateTextWidth(getCurrentLine().getText()) > (getCurrentLine().getWidth() - 150);
+    }
+
+    /**
+     * Sends text of the current line to standard input and initiates an output
+     */
+    private void input(){
+        /* If there is no text on the line, just print default prompt */
+        if(getCurrentLine().getText().equals(defaultPrompt)){
+            currentLine++;
+            prompt(defaultPrompt);
+            return;
+        }
+        std_in = getCurrentLine().getText().split(" ");
+        std_out = commandMapper.mapCommand(std_in);
+        output();
+    }
+
+    /**
+     * Prompts the output of last executed command to the console
+     */
+    private void output(){
+        currentLine++;
+        prompt(std_out);
+        currentLine++;
+        prompt(defaultPrompt);
     }
 
     @Override
     public void keyTyped(KeyEvent keyEvent){
         /* Checking if end of the line wasn't reached. If so, incrementing currentLine */
-        if(strHandler.calculateTextWidth(getCurrentLine().getText()) > (getCurrentLine().getWidth() - 150)){
+        if(exceeds_line()){
             currentLine++;
             checkForOverflow(); // Checking for overflow
         }
 
         /* Deciding what to type based on keyboard input */
         switch (keyEvent.getKeyChar()){
-            case 10: currentLine++;
+            case 10: input(); // ENTER
                      checkForOverflow(); // Checking for overflow
-                     prompt("User@This_Computer~: \0");
                 break;
-            case 8: if(getCurrentLine().getText() == "") currentLine--;
+            case 8: if(getCurrentLine().getText().equals("")) currentLine--; // BACKSPACE
                     getCurrentLine().setText(strHandler.removeLastChar(getCurrentLine().getText()));
                 break;
             default: getCurrentLine().setText(getCurrentLine().getText() + keyEvent.getKeyChar());
